@@ -1,4 +1,4 @@
-## ƒ}[ƒPƒeƒBƒ“ƒOƒ‚ƒfƒ‹‚Ì’f•Ğ
+## ãƒãƒ¼ã‚±ãƒ†ã‚£ãƒ³ã‚°ãƒ¢ãƒ‡ãƒ«ã®æ–­ç‰‡
 options(encoding="UTF-8")
 rm(list=ls())
 setwd("C:/RW")
@@ -7,103 +7,100 @@ random.seed(555)
 
 #install.packages("mvtnorm")
 #install.packages("MCMCpack")
-#install.packages("FKF")
-#install.packages("sspir")
 
-### package“Ç‚İ‚İ
+### packageèª­ã¿è¾¼ã¿
 library(bayesm)
 library(mvtnorm)
 library(MCMCpack)
-library(FKF)
 #--------------------
 
-##--’è”‚Ì’è‹`-------
+##--å®šæ•°ã®å®šç¾©-------
 TIMES <- 500
 nhh <-15
-SEASONALYTY <- 7 #‹Gß•Ï“®‚ÌüŠú
-RP <- 11000  # ƒTƒ“ƒvƒŠƒ“ƒO”
+SEASONALYTY <- 7 #å­£ç¯€å¤‰å‹•ã®å‘¨æœŸ
+RP <- 11000  # ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°æ•°
 keep <- 100
 nz <- 3
 nD <- 5
 zc <- 1+1+ SEASONALYTY-2 + nz
 m <- 1 + 1 + nz
-nvar <- 1 # ŒÂl‘®«‚Å‹‚ß‚é‘ÎÛ‚Ì”i¶‘NH•i‚Æ‚»‚êˆÈŠO‚Ì“ú—j•i‚Æ‚©‚¾‚Æ2j
-limy <- 1e20 # Œ‡‘ª‚Æ‚İ‚È‚·”’l‚Ì‹«ŠE
-k <- 1 # ƒgƒŒƒ“ƒh¬•ªƒ‚ƒfƒ‹‚ÌŸ”
+nvar <- 1 # å€‹äººå±æ€§ã§æ±‚ã‚ã‚‹å¯¾è±¡ã®æ•°ï¼ˆç”Ÿé®®é£Ÿå“ã¨ãã‚Œä»¥å¤–ã®æ—¥æ›œå“ã¨ã‹ã ã¨2ï¼‰
+limy <- 1e20 # æ¬ æ¸¬ã¨ã¿ãªã™æ•°å€¤ã®å¢ƒç•Œ
+k <- 1 # ãƒˆãƒ¬ãƒ³ãƒ‰æˆåˆ†ãƒ¢ãƒ‡ãƒ«ã®æ¬¡æ•°
 ##-------------------
 
-### data”­¶ƒvƒƒZƒX
-## ‘O‰ñ—ˆ“X‚©‚ç‚Ì“ú”‚Ì‘Î”,ƒCƒxƒ“ƒg‚Ì—L–³iƒ_ƒ~[•Ï”j------
-## ’lˆø‚«‚Ì—L–³iƒ_ƒ~[•Ï”j
+### dataç™ºç”Ÿãƒ—ãƒ­ã‚»ã‚¹
+## å‰å›æ¥åº—ã‹ã‚‰ã®æ—¥æ•°ã®å¯¾æ•°,ã‚¤ãƒ™ãƒ³ãƒˆã®æœ‰ç„¡ï¼ˆãƒ€ãƒŸãƒ¼å¤‰æ•°ï¼‰------
+## å€¤å¼•ãã®æœ‰ç„¡ï¼ˆãƒ€ãƒŸãƒ¼å¤‰æ•°ï¼‰
 Z <- NULL
 
-# Œn—ñƒpƒ‰ƒƒ^•”•ª
+# æ™‚ç³»åˆ—ãƒ‘ãƒ©ãƒ¡ã‚¿éƒ¨åˆ†
 tmp <- c(1, 1, rep(0,SEASONALYTY-2))
 
-# Z‘S‘Ì‚Éƒ}[ƒW
+# Zå…¨ä½“ã«ãƒãƒ¼ã‚¸
 for(t in 1:TIMES){
   Z[[t]] <- list(
-          Z0 = t(matrix(tmp, length(tmp), nhh)),
-          Z1 = as.integer(runif(nhh)*30),
-          Z2 = rep(ifelse(runif(1)>0.5,1,0), nhh),
-          Z3 = rep(ifelse(runif(1)>0.5,0,1), nhh))
+    Z0 = t(matrix(tmp, length(tmp), nhh)),
+    Z1 = as.integer(runif(nhh)*30),
+    Z2 = rep(ifelse(runif(1)>0.5,1,0), nhh),
+    Z3 = rep(ifelse(runif(1)>0.5,0,1), nhh))
 }
 
-## ŒÚ‹q‹¤’Ê•”•ª‚Ìdata
+## é¡§å®¢å…±é€šéƒ¨åˆ†ã®data
 D <- matrix(
-    c(
-      rep(1,nhh),
-      log( rnorm(nhh, 7, 2) ),
-      log( rnorm(nhh, 3000, 800)/1000 ),
-      log( rnorm(nhh, 400, 100)/100 ),
-      log( rnorm(nhh, 30, 5)/10 )
-    ),
-    nhh, nD
-  )
+  c(
+    rep(1,nhh),
+    log( rnorm(nhh, 7, 2) ),
+    log( rnorm(nhh, 3000, 800)/1000 ),
+    log( rnorm(nhh, 400, 100)/100 ),
+    log( rnorm(nhh, 30, 5)/10 )
+  ),
+  nhh, nD
+)
 ##------------------------------------------------------------
 
-### ŠÖ”‚Ì’è‹`------------------------------------
-# 2€ƒvƒƒrƒbƒgƒ‚ƒfƒ‹‚ÌƒxƒCƒY„’è(step1—p)
+### é–¢æ•°ã®å®šç¾©------------------------------------
+# 2é …ãƒ—ãƒ­ãƒ“ãƒƒãƒˆãƒ¢ãƒ‡ãƒ«ã®ãƒ™ã‚¤ã‚ºæ¨å®š(step1ç”¨)
 rtnorm <- function(mu, sigma, a, b){
   FA <- pnorm(a, mu, sigma)
   FB <- pnorm(b, mu, sigma)
   result <- qnorm(runif(length(mu)) * (FB - FA) + FA, mu, sigma)
-  if(result == -Inf ) {result <- -100}
-  if(result == Inf ) {result <- 100}
+#  if(result == -Inf ) {result <- -100}
+#  if(result == Inf ) {result <- 100}
   return(result)
 }
 
-# Z‚Ì’l‚ğŠî€‰»‚·‚éŠÖ”(step1—p)
+# Zã®å€¤ã‚’åŸºæº–åŒ–ã™ã‚‹é–¢æ•°(step1ç”¨)
 standardization <- function(z){
   return(log(0.001 + (z - min(z))/(max(z) - min(z))*(0.999 - 0.001)))
 }
 
-# ‹tƒKƒ“ƒ}•ª•z‚ÌƒTƒ“ƒvƒŠƒ“ƒOŠÖ”(step3—p)
+# é€†ã‚¬ãƒ³ãƒåˆ†å¸ƒã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°é–¢æ•°(step3ç”¨)
 irgamma <- function(n, shp, rt){
   return(1/rgamma(n, shape=shp, scale=1/rt))
 }
 
-# ’P•Ï—Ê³‹K•ª•z‚ÌƒJ[ƒlƒ‹•”•ª‚Ìæ”‚Ì•”•ª‚ÌŒvZ(step4—p)
+# å˜å¤‰é‡æ­£è¦åˆ†å¸ƒã®ã‚«ãƒ¼ãƒãƒ«éƒ¨åˆ†ã®ä¹—æ•°ã®éƒ¨åˆ†ã®è¨ˆç®—(step4ç”¨)
 Nkernel <- function(sita, H, D, Vsita){
   return( ((sita - H%*%D)^2)/Vsita )
 }
 
-# ‘½•Ï—Ê³‹K•ª•z‚ÌƒJ[ƒlƒ‹•”•ª‚Ìæ”‚Ì•”•ª‚ÌŒvZ(step4—p)
+# å¤šå¤‰é‡æ­£è¦åˆ†å¸ƒã®ã‚«ãƒ¼ãƒãƒ«éƒ¨åˆ†ã®ä¹—æ•°ã®éƒ¨åˆ†ã®è¨ˆç®—(step4ç”¨)
 NMkernel <- function(sita, H, D, Vsita){
   return(
     t(sita - t(H)%*%D) %*% solve(Vsita) %*% (sita - t(H)%*%D)
   )
 }
 
-### ‹Gß’²®ƒ‚ƒfƒ‹‚Ìó‘Ô‹óŠÔ•\Œ»‚Ìs—ñİ’è
-FGHset <- function(al, k, p, q, nz){  #al‚ÍARƒ‚ƒfƒ‹‚Ìƒ¿ƒxƒNƒgƒ‹Ak;p;q‚ÍƒgƒŒƒ“ƒhA‹GßAAR
+### å­£ç¯€èª¿æ•´ãƒ¢ãƒ‡ãƒ«ã®çŠ¶æ…‹ç©ºé–“è¡¨ç¾ã®è¡Œåˆ—è¨­å®š
+FGHset <- function(al, k, p, q, nz){  #alã¯ARãƒ¢ãƒ‡ãƒ«ã®Î±ãƒ™ã‚¯ãƒˆãƒ«ã€k;p;qã¯ãƒˆãƒ¬ãƒ³ãƒ‰ã€å­£ç¯€ã€AR
   m <- k + p + q + nz -1
-  if(q>0){G <- matrix(0,m,3+nz)} # ó‘Ôƒ‚ƒfƒ‹‚ÅƒgƒŒƒ“ƒhA‹GßAAR‚Ì3‚Â‚ğŠÜ‚Şê‡
-  else{G <- matrix(0,m,2+nz)}    #AR¬•ª‚ğŠÜ‚Ü‚È‚¢ê‡(q=0)
+  if(q>0){G <- matrix(0,m,3+nz)} # çŠ¶æ…‹ãƒ¢ãƒ‡ãƒ«ã§ãƒˆãƒ¬ãƒ³ãƒ‰ã€å­£ç¯€ã€ARã®3ã¤ã‚’å«ã‚€å ´åˆ
+  else{G <- matrix(0,m,2+nz)}    #ARæˆåˆ†ã‚’å«ã¾ãªã„å ´åˆ(q=0)
   F <- matrix(0,m,m)
-  #H <- matrix(0,1,m)          #H‚Ì‘ã‚í‚è‚ÉZtld‚ğg‚¤‚Ì‚ÅAH‚Í•s—v
+  #H <- matrix(0,1,m)          #Hã®ä»£ã‚ã‚Šã«Ztldã‚’ä½¿ã†ã®ã§ã€Hã¯ä¸è¦
   
-  ## ƒgƒŒƒ“ƒhƒ‚ƒfƒ‹‚ÌƒuƒƒbƒNs—ñ‚Ì\’z
+  ## ãƒˆãƒ¬ãƒ³ãƒ‰ãƒ¢ãƒ‡ãƒ«ã®ãƒ–ãƒ­ãƒƒã‚¯è¡Œåˆ—ã®æ§‹ç¯‰
   G[1,1] <- 1
   #H[1,1] <- 1
   if(k==1) {F[1,1] <- 1}
@@ -113,13 +110,13 @@ FGHset <- function(al, k, p, q, nz){  #al‚ÍARƒ‚ƒfƒ‹‚Ìƒ¿ƒxƒNƒgƒ‹Ak;p;q‚ÍƒgƒŒƒ“ƒh
   LS <- k
   NS <- 2;
   
-  ## ‹Gß’²®¬•ª‚ÌƒuƒƒbƒNs—ñ‚Ì\’z
+  ## å­£ç¯€èª¿æ•´æˆåˆ†ã®ãƒ–ãƒ­ãƒƒã‚¯è¡Œåˆ—ã®æ§‹ç¯‰
   G[LS+1, NS] <- 1
   #H[1,LS+1] <- 1
   for(i in 1:(p-1)) {F[LS+1, LS+i] <- -1}
   for(i in 1:(p-2)) {F[LS+i+1, LS+i] <- 1}
-
-  ## Z¬•ª‚ÌƒuƒƒbƒNs—ñ‚Ì\’z
+  
+  ## Zæˆåˆ†ã®ãƒ–ãƒ­ãƒƒã‚¯è¡Œåˆ—ã®æ§‹ç¯‰
   LS <- LS + p -1
   NS <- 2
   for(i in 1:(nz)) {F[LS+i, LS+i] <- 1}
@@ -135,24 +132,24 @@ FGHset <- function(al, k, p, q, nz){  #al‚ÍARƒ‚ƒfƒ‹‚Ìƒ¿ƒxƒNƒgƒ‹Ak;p;q‚ÍƒgƒŒƒ“ƒh
     }
   }
   
-  ## ƒVƒXƒ€ƒ‚ƒfƒ‹‚Ì•ªU‹¤•ªUs—ñQ‚Ì˜g‚ÌZo
+  ## ã‚·ã‚¹ãƒ ãƒ¢ãƒ‡ãƒ«ã®åˆ†æ•£å…±åˆ†æ•£è¡Œåˆ—Qã®æ ã®ç®—å‡º
   Q <- diag(NS+nz)
   
   return(list(m=m, MatF=F, MatG=G, MatQ=Q))
 }
 
-# ó‘Ô‹óŠÔ•\Œ»‚É‚¨‚¯‚és—ñQ‚Ìİ’è------------------------
+# çŠ¶æ…‹ç©ºé–“è¡¨ç¾ã«ãŠã‘ã‚‹è¡Œåˆ—Qã®è¨­å®š------------------------
 Qset <- function(Q0 ,parm){
   NS <- ncol(Q0)
   Q <- Q0
-  # ƒVƒXƒ€ƒ‚ƒfƒ‹‚Ì•ªU‹¤•ªUs—ñQ‚Ì˜g‚ÌZo
+  # ã‚·ã‚¹ãƒ ãƒ¢ãƒ‡ãƒ«ã®åˆ†æ•£å…±åˆ†æ•£è¡Œåˆ—Qã®æ ã®ç®—å‡º
   for(i in 1:NS) {
     Q[i,i] <- parm[i]
   }
   return(Q)
 }
 
-# ƒJƒ‹ƒ}ƒ“ƒtƒBƒ‹ƒ^‚ÌŠÖ” ------------------------------------------
+# ã‚«ãƒ«ãƒãƒ³ãƒ•ã‚£ãƒ«ã‚¿ã®é–¢æ•° ------------------------------------------
 KF <- function(y, XF0, VF0, F, H, G, Q, R, limy, ISW, OSW, m, N)  
 {
   if (OSW == 1)
@@ -163,14 +160,14 @@ KF <- function(y, XF0, VF0, F, H, G, Q, R, limy, ISW, OSW, m, N)
   XF <- XF0; VF <- VF0; NSUM <- 0; SIG2 <- 0; LDET <- 0
   for (n in 1:N)
   {
-    # 1Šúæ—\‘ª
+    # 1æœŸå…ˆäºˆæ¸¬
     XP <- F %*% XF
     VP <- F %*% VF %*% t(F) +  G %*% Q %*% t(G)
-    # ƒtƒBƒ‹ƒ^
+    # ãƒ•ã‚£ãƒ«ã‚¿
     if (y[n] < limy) 
     {
       NSUM <- NSUM + 1
-      B <- matrix(H[,n],1,) %*% VP %*% t(matrix(H[,n],1,)) + R  # H‚Í”Šw“I‚É‚Í‰¡ƒxƒNƒgƒ‹‚È‚Ì‚Å‰ñ“]‚³‚¹‚é
+      B <- matrix(H[,n],1,) %*% VP %*% t(matrix(H[,n],1,)) + R  # Hã¯æ•°å­¦çš„ã«ã¯æ¨ªãƒ™ã‚¯ãƒˆãƒ«ãªã®ã§å›è»¢ã•ã›ã‚‹
       B1 <- solve(B)
       K <- VP %*% t(matrix(H[,n],1,)) %*% B1
       e <- y[n] - matrix(H[,n],1,) %*% XP
@@ -207,7 +204,7 @@ KF <- function(y, XF0, VF0, F, H, G, Q, R, limy, ISW, OSW, m, N)
   }
 }
 
-# •½ŠŠ‰»‚ÌŠÖ” ----------------------------------------------------
+# å¹³æ»‘åŒ–ã®é–¢æ•° ----------------------------------------------------
 SMO <- function(XPS, XFS, VPS, VFS, F, GSIG2, k, p, q, m, N)
 {
   XSS <- matrix(0, m, N); VSS <- array(dim = c(m, m, N))
@@ -226,7 +223,7 @@ SMO <- function(XPS, XFS, VPS, VFS, F, GSIG2, k, p, q, m, N)
   return(list(XSS=XSS, VSS=VSS))
 }
 
-# TAU2x‚Ì‘Î”–Ş“xŠÖ”‚Ì’è‹` ----------------------------------------
+# TAU2xã®å¯¾æ•°å°¤åº¦é–¢æ•°ã®å®šç¾© ----------------------------------------
 LogL <- function(parm, y, F, H, G, R, limy, ISW, k, m, N, Q0,...) 
 {
   Q <- Qset(Q0 ,parm)
@@ -239,28 +236,30 @@ LogL <- function(parm, y, F, H, G, R, limy, ISW, k, m, N, Q0,...)
 ##-----------------------------------
 
 
-## –‘O•ª•z‚Ìƒpƒ‰ƒƒ^-----------------
-# step1FöİŒø—pƒTƒ“ƒvƒŠƒ“ƒO—p
-A <- 0.01 * diag(zc) ## A‚ÍB_0‚Ì‹t”
-b0 <- matrix(0, nrow=zc, ncol=1)  ## ƒJƒ‹ƒ}ƒ“ƒtƒBƒ‹ƒ^‚ÅZo‚µA“n‚·•K—v‚ ‚é‚©‚à
+## äº‹å‰åˆ†å¸ƒã®ãƒ‘ãƒ©ãƒ¡ã‚¿-----------------
+# step1ï¼šæ½œåœ¨åŠ¹ç”¨ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ç”¨
+# Xsã®äº‹å‰åˆ†å¸ƒã«ãªã‚‹ã®ã§ã€ä¸è¦
+#A <- 0.01 * diag(zc) ## Aã¯B_0ã®é€†æ•°
+#b0 <- matrix(0, nrow=zc, ncol=1)  ## ã‚«ãƒ«ãƒãƒ³ãƒ•ã‚£ãƒ«ã‚¿ã§ç®—å‡ºã—ã€æ¸¡ã™å¿…è¦ã‚ã‚‹ã‹ã‚‚
 
-# step3FƒVƒXƒeƒ€ƒmƒCƒY‚Ì•ªUƒTƒ“ƒvƒŠƒ“ƒO—p
+# step3ï¼šã‚·ã‚¹ãƒ†ãƒ ãƒã‚¤ã‚ºã®åˆ†æ•£ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ç”¨
 mu0 <- 0; kaps0 <- 25;
 nu0 <- 0.02; s0 <- 0.02
+Sita.sys0 <- rep(10.0, m)
 
-# step5FÁ”ïÒˆÙ¿«‚Ì‰ñ‹Aƒpƒ‰ƒƒ^H‚Ìƒf[ƒ^˜g
+# step5ï¼šæ¶ˆè²»è€…ç•°è³ªæ€§ã®å›å¸°ãƒ‘ãƒ©ãƒ¡ã‚¿Hã®ãƒ‡ãƒ¼ã‚¿æ 
 m0 <- matrix(rep(0,nD*nvar), nD, nvar)
-A0 <- 0.01*diag(nD)            #”óŒû–{‚Å‚ÍA
+A0 <- 0.01*diag(nD)            #æ¨‹å£æœ¬ã§ã¯A
 
-# step6FÁ”ïÒˆÙ¿«‚Ì‰ñ‹Aƒpƒ‰ƒƒ^V‚Ìƒf[ƒ^˜g
-f0 <- nvar@+3
+# step6ï¼šæ¶ˆè²»è€…ç•°è³ªæ€§ã®å›å¸°ãƒ‘ãƒ©ãƒ¡ã‚¿Vã®ãƒ‡ãƒ¼ã‚¿æ 
+f0 <- nvarã€€+3
 V0 <- f0 * diag(nvar)
 ##------------------------------------
 
 
-##«R‚Ìƒ‹[ƒv‚Ì’¼‰º‚Éd‚Ü‚È‚¢‚Æ‘Ê–Ú‚Å‚ÍH
-## –Œã•ª•zƒTƒ“ƒvƒŠƒ“ƒO‚É•K—v‚Èƒf[ƒ^‚Ì˜g‚ğì¬-----------
-# step1FöİŒø—pƒTƒ“ƒvƒŠƒ“ƒO‚Ìƒf[ƒ^˜g 
+##â†“Rã®ãƒ«ãƒ¼ãƒ—ã®ç›´ä¸‹ã«ä»•è¾¼ã¾ãªã„ã¨é§„ç›®ã§ã¯ï¼Ÿ
+## äº‹å¾Œåˆ†å¸ƒã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«å¿…è¦ãªãƒ‡ãƒ¼ã‚¿ã®æ ã‚’ä½œæˆ-----------
+# step1ï¼šæ½œåœ¨åŠ¹ç”¨ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã®ãƒ‡ãƒ¼ã‚¿æ  
 ZpZ <- array(double(zc*zc*TIMES),dim=c(zc, zc, TIMES))
 Ztld <- array(double(nhh*zc*TIMES),dim=c(nhh, zc, TIMES))
 for(t in 1:TIMES){
@@ -270,14 +269,14 @@ for(t in 1:TIMES){
 u <- array(runif(nhh*TIMES, min=-1, max=1), dim=c(nhh, TIMES))
 Zpu <- matrix(double(zc*TIMES), zc, TIMES)
 
-# step2:ó‘ÔƒxƒNƒgƒ‹‚ÌZo‚Ìƒf[ƒ^˜g
-# ˆ—‚Ì“s‡ãA‰Šú’l‚Ìİ’è•”•ª‚Åˆ—
+# step2:çŠ¶æ…‹ãƒ™ã‚¯ãƒˆãƒ«ã®ç®—å‡ºã®ãƒ‡ãƒ¼ã‚¿æ 
+# å‡¦ç†ã®éƒ½åˆä¸Šã€åˆæœŸå€¤ã®è¨­å®šéƒ¨åˆ†ã§å‡¦ç†
 
-# step3FƒVƒXƒeƒ€ƒmƒCƒY‚Ì•ªUƒTƒ“ƒvƒŠƒ“ƒO‚Ìƒf[ƒ^˜g
+# step3ï¼šã‚·ã‚¹ãƒ†ãƒ ãƒã‚¤ã‚ºã®åˆ†æ•£ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã®ãƒ‡ãƒ¼ã‚¿æ 
 Sita.sys <- array(rep(10*diag(m),nhh), dim=c(m,m,nhh)) 
 
-# step4F‹[—‰Æ’ë“àİŒÉ‚ğ‹K’è‚·‚é‚½‚ß‚Ìƒpƒ‰ƒƒ^ƒTƒ“ƒvƒŠƒ“ƒO‚Ì‚½‚ß‚Ìƒf[ƒ^˜g
-# ƒÆ‚ª2•Ï”‚ğ‚Â‚ÍƒxƒNƒgƒ‹‚Å‚Í‚È‚­matrix‚É‚·‚é‚±‚Æ
+# step4ï¼šæ“¬ä¼¼å®¶åº­å†…åœ¨åº«ã‚’è¦å®šã™ã‚‹ãŸã‚ã®ãƒ‘ãƒ©ãƒ¡ã‚¿ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã®ãŸã‚ã®ãƒ‡ãƒ¼ã‚¿æ 
+# Î¸ãŒ2å¤‰æ•°ã‚’æŒã¤æ™‚ã¯ãƒ™ã‚¯ãƒˆãƒ«ã§ã¯ãªãmatrixã«ã™ã‚‹ã“ã¨
 Lsita.dlt <- rep(0,nhh)
 Lsita.lmbd <- rep(0,nhh)
 Hdlt <- matrix(rep(0,nD),nvar,)
@@ -293,29 +292,29 @@ rej.lmbd <-rep(0,nhh)
 ##---------------------------------------------------------
 
 
-## ‰Šú’l‚Ìİ’è------------------------------
-# step1—p
+## åˆæœŸå€¤ã®è¨­å®š------------------------------
+# step1ç”¨
 Xs <- array(double(nhh*zc*TIMES), dim=c(nhh, zc, TIMES))
 sigma <- 1.0
-# ut‚Íat,bt‚ğ”­¶‚³‚¹‚é‚½‚ß‚Éì‚Á‚½‹[—ƒf[ƒ^.–{—ˆ‚Í•K—v‚È‚¢
+# utã¯at,btã‚’ç™ºç”Ÿã•ã›ã‚‹ãŸã‚ã«ä½œã£ãŸæ“¬ä¼¼ãƒ‡ãƒ¼ã‚¿.æœ¬æ¥ã¯å¿…è¦ãªã„
 ut <- array(runif(nhh*TIMES, min=-1, max=1), dim=c(nhh, TIMES))
 
-# step2—p
+# step2ç”¨
 param <- FGHset(0, 1, SEASONALYTY, 0, nz)
 L <- 1
 R <- diag(L)
 F <- param$MatF
 G <- param$MatG
- #ƒVƒXƒeƒ€ƒ‚ƒfƒ‹‚Ì•ªU‚ğŒÂl‚²‚Æ‚ÉŠi”[‚·‚é˜g
- Q0 <-param$MatQ %o% rep(1,nhh)
- Q <- Q0
+#ã‚·ã‚¹ãƒ†ãƒ ãƒ¢ãƒ‡ãƒ«ã®åˆ†æ•£ã‚’å€‹äººã”ã¨ã«æ ¼ç´ã™ã‚‹æ 
+Q0 <-param$MatQ %o% rep(1,nhh)
+Q <- Q0
 
-# step3—p
+# step3ç”¨
 mu <- 0
 sigs <- 1
 ##-------------------------------------------
 
-## Ø’f”ÍˆÍ‚Ìw’è
+## åˆ‡æ–­ç¯„å›²ã®æŒ‡å®š
 at <- ifelse(ut<0, -100, 0)
 bt <- ifelse(ut<0, 0, 100)
 
@@ -323,72 +322,62 @@ bt <- ifelse(ut<0, 0, 100)
 ##-------------------
 udraw <- array(double(nhh*TIMES*RP),dim=c(nhh,TIMES,RP))
 
-## ƒTƒ“ƒvƒŠƒ“ƒO‚Ìƒ‹[ƒv
+## ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã®ãƒ«ãƒ¼ãƒ—
 for(nd in 1:RP){
   for(hh in 1:nhh){
-    # step3‚ÌŠK·ŒvZ‚Ì˜a‚ÌŒvZ‚Åg—p‚·‚é•Ï”‚Ì‰Šú‰»
+    # step3ã®éšå·®è¨ˆç®—ã®å’Œã®è¨ˆç®—ã§ä½¿ç”¨ã™ã‚‹å¤‰æ•°ã®åˆæœŸåŒ–
     dift <- 0
     difw <- 0
     difbeta <- rep(0,nz)
     
-    # step4‚ÌƒÆ‚Ì–Œã•ª•zƒJ[ƒlƒ‹‚Ì‘æˆê€‚Ì˜aŒvZg—p‚·‚é•Ï”‚Ì‰Šú‰»
+    # step4ã®Î¸ã®äº‹å¾Œåˆ†å¸ƒã‚«ãƒ¼ãƒãƒ«ã®ç¬¬ä¸€é …ã®å’Œè¨ˆç®—æ™‚ä½¿ç”¨ã™ã‚‹å¤‰æ•°ã®åˆæœŸåŒ–
     Lsita <- 0
     
     for(t in 1:TIMES){
       # step1--------------------------------------------------
       u[hh,t] <- rtnorm(Ztld[hh,,t]%*%Xs[hh,,t], sigma, at[hh,t], bt[hh,t])
       
-      udraw[hh,t,nd] <- u[hh,t]
-      
-      # beta‚ÌƒTƒ“ƒvƒŠƒ“ƒO
-      Zpu[,t] <- crossprod(t(Ztld[hh,,t]),u[hh,t])
-      IB <- solve(ZpZ[,,t] + A)
-      btilde <- IB %*% (Zpu[,t] + A%*% b0)
-      Xs[hh,,t] <- btilde + chol(IB) %*% rnorm(zc)
-
+      udraw[hh,t,nd] <- u[hh,t]      
       #------------------------------------------------------------
     }
     
-    ## step2‚ÌƒVƒXƒeƒ€ƒ‚ƒfƒ‹ƒpƒ‰ƒ[ƒ^‚ÌŒvZ----------------------    
-    # TAU2‚ÌÅ–Ş„’è‚ğ‹‚ß‚é”’lŒvZ------------------------------
+    ## step2ã®ã‚·ã‚¹ãƒ†ãƒ ãƒ¢ãƒ‡ãƒ«ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®è¨ˆç®—----------------------    
+    # TAU2ã®æœ€å°¤æ¨å®šã‚’æ±‚ã‚ã‚‹æ•°å€¤è¨ˆç®—------------------------------
     ISW <- 0
-    tau0 <- c(TAU21=Sita.sys[1,1,hh],TAU22=Sita.sys[2,2,hh],
-              TAU23=Sita.sys[3,3,hh],TAU24=Sita.sys[4,4,hh],
-              TAU25=Sita.sys[5,5,hh])
-    LLF1 <- optim(tau0, fn=LogL, y=u[hh,], F=F, H=Ztld[hh,,], G=G, R=R,
+    LLF1 <- optim(Sita.sys0, fn=LogL, y=u[hh,], F=F, H=Ztld[hh,,], G=G, R=R,
                   limy=limy, ISW=ISW, k=zc, m=m , N=TIMES , Q0=Q0[,,hh],
                   method ="L-BFGS-B",
                   lower = 1e-4, upper = 1e2,
                   control=list(fnscale=-1))
-    # TAU2‚ÌÅ–Ş„’è
+    # TAU2ã®æœ€å°¤æ¨å®š
     TAU2 <- LLF1$par
     
-    # ƒJƒ‹ƒ}ƒ“ƒtƒBƒ‹ƒ^
+    # ã‚«ãƒ«ãƒãƒ³ãƒ•ã‚£ãƒ«ã‚¿
     Q <- Qset(Q0[,,hh] ,TAU2); XF0 <- numeric(zc)
     VF0 <- 10 * diag(zc); OSW <- 1
     LLF2 <- KF(u[hh,], XF0, VF0, F, Ztld[hh,,], G, Q, R, limy, ISW, OSW, zc, TIMES)
     XPS <- LLF2$XPS; XFS <- LLF2$XFS
     VPS <- LLF2$VPS; VFS <- LLF2$VFS
     SIG2 <- LLF2$Ovar; GSIG2 <- 1
-    # •½ŠŠ‰» ----------------------------------------------------------
+    # å¹³æ»‘åŒ– ----------------------------------------------------------
     LLF3 <- SMO(XPS, XFS, VPS, VFS, F, GSIG2, 1, SEASONALYTY, 1, zc, TIMES)
     Xs[hh,,] <- LLF3$XSS
     #------------------------------------------------------------
     
     for(t in 1:TIMES){  
-      # step3‚ÌŠK·‚ÌŒvZ--------------------------------------
+      # step3ã®éšå·®ã®è¨ˆç®—--------------------------------------
       if(t>1){
         dift <- dift + (Xs[hh,1,t] - Xs[hh,1,t-1])^2
         difw <- difw + (Xs[hh, 2, t]+sum(Xs[hh, 2:SEASONALYTY, t-1]))^2
         
         for(d in 1:nz){
           difbeta[d] <- difbeta[d] + (Xs[hh,SEASONALYTY+d,t] 
-                                        - Xs[hh,SEASONALYTY+d,t-1])^2
+                                      - Xs[hh,SEASONALYTY+d,t-1])^2
         }
       }
       #--------------------------------------------------------
       
-      # step4‚ÌŒø—p’l‚ÌŒë·ŒvZ(step4‚ÌƒÆ‚Ì–Ş“xŒvZ)------------
+      # step4ã®åŠ¹ç”¨å€¤ã®èª¤å·®è¨ˆç®—(step4ã®Î¸ã®å°¤åº¦è¨ˆç®—)------------
       Lsita <- Lsita + (u[hh,t] - t(Ztld[hh,,t])%*%Xs[hh,,t])^2
       
       #--------------------------------------------------------
@@ -403,19 +392,19 @@ for(nd in 1:RP){
     #--------------------------------------------
     
     ### step4--------------------------------------
-    ## dlt‘¤‚ÌŒvZ
-    # Œ»ó‚ÌƒÆ‚ğŠm•Û‚·‚é
+    ## dltå´ã®è¨ˆç®—
+    # ç¾çŠ¶ã®Î¸ã‚’ç¢ºä¿ã™ã‚‹
     old.sita.dlt <- Sita.dlt[hh]
-    # V‚µ‚¢ƒÆ‚ğƒTƒ“ƒvƒŠƒ“ƒOiŒ•àƒTƒ“ƒvƒŠƒ“ƒOj
+    # æ–°ã—ã„Î¸ã‚’ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ï¼ˆé…”æ­©ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ï¼‰
     new.sita.dlt <- Sita.dlt[hh] + rnorm(1, 0, sigma.dlt)
-
-    # –Ş“x‚ÌŒvZi‘Î”–Ş“x‚Ìê‡‚Íƒ„ƒRƒrƒAƒ“‚Å’²®j
+    
+    # å°¤åº¦ã®è¨ˆç®—ï¼ˆå¯¾æ•°å°¤åº¦ã®å ´åˆã¯ãƒ¤ã‚³ãƒ“ã‚¢ãƒ³ã§èª¿æ•´ï¼‰
     new.Lsita.dlt <- Lsita + Nkernel(new.sita.dlt, Hdlt, D[hh,], Vsita.dlt)
     new.Lsita.dlt <- exp(-0.5*new.Lsita.dlt)
     old.Lsita.dlt <- Lsita + Nkernel(old.sita.dlt, Hdlt, D[hh,], Vsita.dlt)
     old.Lsita.dlt <- exp(-0.5*old.Lsita.dlt)
     
-    # MHƒXƒeƒbƒv
+    # MHã‚¹ãƒ†ãƒƒãƒ—
     alpha <- min(1, new.Lsita.dlt/old.Lsita.dlt)
     if(alpha=='NaN') alpha <- -1
     uni <- runif(1)
@@ -424,20 +413,20 @@ for(nd in 1:RP){
     }else{
       rej.dlt[hh] <- rej.dlt[hh] + 1
     }
-
-    ## lmbd‘¤‚ÌŒvZ
-    # Œ»ó‚ÌƒÆ‚ğŠm•Û‚·‚é
+    
+    ## lmbdå´ã®è¨ˆç®—
+    # ç¾çŠ¶ã®Î¸ã‚’ç¢ºä¿ã™ã‚‹
     old.sita.lmbd <- Sita.lmbd[hh]
-    # V‚µ‚¢ƒÆ‚ğƒTƒ“ƒvƒŠƒ“ƒOiŒ•àƒTƒ“ƒvƒŠƒ“ƒOj
+    # æ–°ã—ã„Î¸ã‚’ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ï¼ˆé…”æ­©ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ï¼‰
     new.sita.lmbd <- Sita.lmbd[hh] + rnorm(1, 0, sigma.lmbd)
     
-    # –Ş“x‚ÌŒvZi‘Î”–Ş“x‚Ìê‡‚Íƒ„ƒRƒrƒAƒ“‚Å’²®j
+    # å°¤åº¦ã®è¨ˆç®—ï¼ˆå¯¾æ•°å°¤åº¦ã®å ´åˆã¯ãƒ¤ã‚³ãƒ“ã‚¢ãƒ³ã§èª¿æ•´ï¼‰
     new.Lsita.lmbd <- Lsita + Nkernel(new.sita.lmbd, Hlmbd, D[hh,], Vsita.lmbd)
     new.Lsita.lmbd <- exp(-0.5*new.Lsita.lmbd)
     old.Lsita.lmbd <- Lsita + Nkernel(old.sita.lmbd, Hlmbd, D[hh,], Vsita.lmbd)
     old.Lsita.lmbd <- exp(-0.5*old.Lsita.lmbd)
     
-    # MHƒXƒeƒbƒv
+    # MHã‚¹ãƒ†ãƒƒãƒ—
     alpha <- min(1, new.Lsita.lmbd/old.Lsita.lmbd)
     if(alpha=='NaN') alpha <- -1
     uni <- runif(1)
@@ -449,39 +438,39 @@ for(nd in 1:RP){
     #--------------------------------------------    
   }
   ### step5--------------------------------------
-  ## dlt‘¤‚ÌZo----
-  # ‘½•Ï—Ê³‹K•ª•z‚Ìƒpƒ‰ƒƒ^‚ÌZo
+  ## dltå´ã®ç®—å‡º----
+  # å¤šå¤‰é‡æ­£è¦åˆ†å¸ƒã®ãƒ‘ãƒ©ãƒ¡ã‚¿ã®ç®—å‡º
   Hhat.dlt <- solve(crossprod(D)) %*% t(D) %*% Sita.dlt
   Dtld <- solve(crossprod(D) + A0) %*% (crossprod(D) %*% Hhat.dlt + A0%*%m0)
   rtld <- as.vector(Dtld)
-  sig <-  (crossprod(D) + A0) %o% Vsita.dlt # %o%‚Ì€‚Ì‘OŒã‚ğ•Ï‚¦‚é‚Ì‚Íƒ_ƒ
-  # ‘½•Ï—Ê³‹K•ª•z‚ÅƒTƒ“ƒvƒŠƒ“ƒO
+  sig <-  (crossprod(D) + A0) %o% Vsita.dlt # %o%ã®é …ã®å‰å¾Œã‚’å¤‰ãˆã‚‹ã®ã¯ãƒ€ãƒ¡
+  # å¤šå¤‰é‡æ­£è¦åˆ†å¸ƒã§ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°
   Hdlt <- rmvnorm(nvar, rtld, as.matrix(data.frame(sig))) 
   ##-----------------
-  ## lmbd‘¤‚ÌZo----
-  # ‘½•Ï—Ê³‹K•ª•z‚Ìƒpƒ‰ƒƒ^‚ÌZo
+  ## lmbdå´ã®ç®—å‡º----
+  # å¤šå¤‰é‡æ­£è¦åˆ†å¸ƒã®ãƒ‘ãƒ©ãƒ¡ã‚¿ã®ç®—å‡º
   Hhat.lmbd <- solve(crossprod(D)) %*% t(D) %*% Sita.lmbd
   Dtld <- solve(crossprod(D) + A0) %*% (crossprod(D) %*% Hhat.lmbd + A0%*%m0)
   rtld <- as.vector(Dtld)
-  sig <-  (crossprod(D) + A0) %o% Vsita.lmbd # %o%‚Ì€‚Ì‘OŒã‚ğ•Ï‚¦‚é‚Ì‚Íƒ_ƒ
-  # ‘½•Ï—Ê³‹K•ª•z‚ÅƒTƒ“ƒvƒŠƒ“ƒO
+  sig <-  (crossprod(D) + A0) %o% Vsita.lmbd # %o%ã®é …ã®å‰å¾Œã‚’å¤‰ãˆã‚‹ã®ã¯ãƒ€ãƒ¡
+  # å¤šå¤‰é‡æ­£è¦åˆ†å¸ƒã§ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°
   Hlmbd <- rmvnorm(nvar, rtld, as.matrix(data.frame(sig))) 
   ##-----------------
   #--------------------------------------------
   
   ### step6--------------------------------------
-  ##dlt‘¤‚ÌZo
-  # ‹tƒEƒBƒbƒVƒƒ[ƒg•ª•z‚Ìƒpƒ‰ƒƒ^‚ÌZo
+  ##dltå´ã®ç®—å‡º
+  # é€†ã‚¦ã‚£ãƒƒã‚·ãƒ£ãƒ¼ãƒˆåˆ†å¸ƒã®ãƒ‘ãƒ©ãƒ¡ã‚¿ã®ç®—å‡º
   div <- (Sita.dlt - D%*%matrix(Hdlt,nD,nvar))
   S <- crossprod(div)
-  # ‹tƒEƒBƒbƒVƒƒ[ƒg•ª•z‚ÅƒTƒ“ƒvƒŠƒ“ƒO
+  # é€†ã‚¦ã‚£ãƒƒã‚·ãƒ£ãƒ¼ãƒˆåˆ†å¸ƒã§ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°
   Vsita.dlt <- riwish(f0 + nhh, V0 + S)  
   ##------------
-  ##lmbd‘¤‚ÌZo
-  # ‹tƒEƒBƒbƒVƒƒ[ƒg•ª•z‚Ìƒpƒ‰ƒƒ^‚ÌZo
+  ##lmbdå´ã®ç®—å‡º
+  # é€†ã‚¦ã‚£ãƒƒã‚·ãƒ£ãƒ¼ãƒˆåˆ†å¸ƒã®ãƒ‘ãƒ©ãƒ¡ã‚¿ã®ç®—å‡º
   div <- (Sita.lmbd - D%*%matrix(Hlmbd,nD,nvar))
   S <- crossprod(div)
-  # ‹tƒEƒBƒbƒVƒƒ[ƒg•ª•z‚ÅƒTƒ“ƒvƒŠƒ“ƒO
+  # é€†ã‚¦ã‚£ãƒƒã‚·ãƒ£ãƒ¼ãƒˆåˆ†å¸ƒã§ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°
   Vsita.lmbd <- riwish(f0 + nhh, V0 + S)  
   ##------------  
   #--------------------------------------------

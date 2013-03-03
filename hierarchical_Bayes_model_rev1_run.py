@@ -80,6 +80,7 @@ b0 = np.array([[np.float(0) for j in range(1)] for i in range(zc)])
 # step3：システムノイズの分散サンプリング用
 mu0 = 0; kaps0 = 25
 nu0 = 0.02; s0 = 0.02
+Sita_sys0 = np.array([np.float(10)]*m)
 #
 # step5：消費者異質性の回帰パラメタHのデータ枠
 m0 = np.array([[np.float(0) for j in range(nvar)] for i in range(nD)])
@@ -168,14 +169,10 @@ for nd in range(RP):
         ## step2のシステムモデルパラメータの計算----------------------    
         # TAU2の最尤推定を求める数値計算------------------------------
         ISW = 0
-#        
-        tau0 = np.array([Sita_sys[hh,0,0], Sita_sys[hh,1,1,], Sita_sys[hh,2,2],
-                        Sita_sys[hh,3,3], Sita_sys[hh,4,4]])
         mybounds=[(1e-4,1e2),(1e-4,1e2),(1e-4,1e2),(1e-4,1e2),(1e-4,1e2)]
-        LLF1 = so.fmin_l_bfgs_b(hbm.LogL, x0=tau0,
+        LLF1 = so.fmin_l_bfgs_b(hbm.LogL, x0=Sita_sys0,
                                 args=(np.array(u[hh,:]), F, np.array(Ztld[:,:,hh]), G, R, limy, ISW, zc, m, TIMES, Q0),
-                                bounds=mybounds, approx_grad=True) 
-#        
+                                bounds=mybounds, approx_grad=True)         
         # TAU2の最尤推定
         TAU2 = LLF1[0]
 #        
