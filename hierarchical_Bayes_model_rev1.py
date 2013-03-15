@@ -1,4 +1,5 @@
 # coding: utf8
+#cython:boundscheck=False
 '''
 Created on 2013/02/25
 
@@ -15,6 +16,9 @@ import scipy.stats as ss
 import numpy as np
 import math
 from scipy.linalg import inv,cholesky,det
+import pyximport
+#cimport numpy as np 
+#cimport cython 
 
 ### 関数の定義------------------------------------
 # 2項プロビットモデルのベイズ推定(step1用)
@@ -34,6 +38,7 @@ def standardization(z):
 
 # 単変量正規分布のカーネル部分の乗数の部分の計算(step4用)
 def Nkernel(sita, H, D, Vsita):
+    if Vsita == 0: Vsita=1e-6
     return ((sita - np.dot(H,D))**2)/Vsita
 
 # 多変量正規分布のカーネル部分の乗数の部分の計算(step4用)
@@ -96,7 +101,7 @@ def KF(y, XF0, VF0, F, H, G, Q, R, limy, ISW, OSW, m, N):
     if OSW == 1:
         XPS = np.array([[np.float(0)]*m]*N); XFS = np.array([[np.float(0)]*m]*N)
         VPS = np.array([[[np.float(0)]*m]*m]*N); VFS = np.array([[[np.float(0)]*m]*m]*N)
-    XF = np.array(XF0); VF = VF0; NSUM = 0.0; SIG2 = 0.0; LDET = 0.0
+    XF = np.array(XF0); VF = VF0; NSUM = 0.0; SIG2 = 0.0; LDET = 0.0    
     for  n in range(N):
         # 1期先予測
         XP = np.ndarray.flatten( np.dot(F, XF.T) ) #2週目から縦ベクトルになってしまうので、常に横ベクトルに変換
@@ -106,9 +111,9 @@ def KF(y, XF0, VF0, F, H, G, Q, R, limy, ISW, OSW, m, N):
         if y[n] < limy: 
             NSUM = NSUM + 1
             B = np.dot( np.dot(H[:,n], VP), H[:,n].T)  + R  # Hは数学的には横ベクトル
-            B1 = inverse(B) # nvar次元の縦ベクトル
-            K = np.matrix(np.dot(VP, H[:,n].T)).T * np.matrix(B1) # Kは縦ベクトルになる(matrix)
-            e = np.array(y[n]).T - np.dot(H[:,n], XP.T) # nvar次元の縦ベクトル
+            B1 = inverse(B) # nvar次元の縦ベクトル                        
+            K = np.matrix(np.dot(VP, H[:,n].T)).T * np.matrix(B1) # Kは縦ベクトルになる(matrix)           
+            e = np.array(y[n]).T - np.dot(H[:,n], XP.T) # nvar次元の縦ベクトル            
             XF = np.array(XP) + np.array( K * np.matrix(e) ).T # 横ベクトル
             VF = np.array(VP) - np.array( K* np.matrix(H[:,n]) * VP)           
             SIG2 = SIG2 + np.ndarray.flatten(np.array( np.matrix(e) * np.matrix(B1) * np.matrix(e).T ))[0] # 1次元でも計算できるようにmatrixにする
@@ -118,7 +123,7 @@ def KF(y, XF0, VF0, F, H, G, Q, R, limy, ISW, OSW, m, N):
         if OSW == 1:
             XPS[n,:] = XP; XFS[n,:] = XF; VPS[n,:,:] = VP; VFS[n,:,:] = VF
     SIG2 = SIG2 / NSUM
-    if ISW == 0:                
+    if ISW == 0:
         FF = -0.5 * (NSUM * (math.log(2 * np.pi * SIG2) + 1) + LDET)
     else:
         FF = -0.5 * (NSUM * (math.log(2 * np.pi) + SIG2) + LDET)
@@ -143,7 +148,9 @@ def SMO(XPS, XFS, VPS, VFS, F, GSIG2, k, p, q, m, N):
     return {'XSS':XSS, 'VSS':VSS}
 
 # TAU2xの対数尤度関数の定義 ----------------------------------------
-def LogL(parm, *args): 
+def LogL(parm, *args):
+#    y=args[0][0]; F=args[0][1]; H=args[0][2]; G=args[0][3]; R=args[0][4]; limy=args[0][5]
+#    ISW=args[0][6]; k=args[0][7]; m=args[0][8]; N=args[0][9]; Q0=args[0][10]
     y=args[0]; F=args[1]; H=args[2]; G=args[3]; R=args[4]; limy=args[5]
     ISW=args[6]; k=args[7]; m=args[8]; N=args[9]; Q0=args[10]
     Q = Qset(Q0 ,parm)
@@ -180,5 +187,104 @@ def wishartrand(nu, phi):
             else:
                 foo[i,j]  = npr.normal(0,1)
     return np.dot(chol, np.dot(foo, np.dot(foo.T, chol.T)))
+# -------------------------------------------------------
+
+# 逆ウィッシャート関数の定義----------------------------------------------
+def calc_INV(TIMES, PM, C, INV, dlt, lmbd):
+    for t in xrange(1,TIMES):
+        Cons = INV[:,t-1]*( dlt[:]*C[:]/(dlt[:] + (INV[:,t-1])**lmbd[:]) )
+        INV[:, t] = INV[:, t-1] + PM[t-1] - Cons
+    return np.array(INV)
+# -------------------------------------------------------
+
+# 準ニュートン法の定義----------------------------------------------
+class QuasiNewton:
+    def __init__(self, fnc=LogL, max=1024, step=1, eps=2.2204460492503131e-16, N=None, args=None):
+        # Target Function
+        self._func = fnc #LogL() 
+        self._max = max
+        self._step = step
+        self._eps = eps
+        self._N = N
+        self._args = args
+#
+    # BFGS Method
+    def Slv(self, x0, *args):
+        self._args = args[0]
+        self._N = len(x0)
+        Idn = np.identity(self._N) # Identity Matrix
+        x = x0        # Initial Value(xはNかける1の縦ベクトルなので計算注意)
+        hesse = np.identity(self._N) # Hessian Matrix
+        g2 = self.Gradient(x)    #勾配を求める(自作関数)。次元はN*1
+#        
+        k = []
+        for i in range(self._max):
+            g1 = g2    #次元はN*1
+            print self.Length(g1)
+            if self.Length(g1) < self._eps: break    # Converged(収束)
+            p = np.dot((-1 * hesse), g1.T)    #pはN*1の縦ベクトル
+            k = self.Gold(x, p)  #α値の更新（自作関数） ← 改訂ニュートン法による。ステップ幅の決定。kはスカラ
+            s = p*k         #sはN*1の縦ベクトル
+            x += s         #ここでxが更新される
+            x[x<1e-4]=1e-4; x[x>1e2]=1e2 
+#
+            # Calculating Hessian Matrix
+            g2 = self.Gradient(x)
+            y = g2 - g1    #勾配の差(次元はN*1)
+            yt = y.T    #次元は1*N
+            st = s.T    #次元は1*N
+            z = np.dot(st, y)
+            if z == 0: break   # wether Converged
+#
+            # BFGS Formula
+            hesse = (Idn - s * yt / z) * hesse * (Idn - y * st / z) + s * st / z;    #ヘッセ行列の近似値の更新。
+#
+        # Returning X and Y
+        return [x, self._func(x, self._args)]
+
+    # Gradient Vector at X
+    def Gradient(self, x):
+        h = (self._eps * 2)    #微分用の幅
+        x1 = x; x2 = x
+#
+        g = [0]*self._N
+        for i in range(self._N):
+            x1[i] -= h;    #非常に小さな値（勾配を見る際の下側のx軸の値）
+            x2[i] += h;    #非常に小さな値（勾配を見る際の上側のx軸の値）        
+            y1 = self._func(x1, self._args)    #classで読み込まれた関数にx1を代入した値
+            y2 = self._func(x2, self._args)    
+            g[i] = (y2 - y1) / (h * 2)    #変化値を割って微分
+        return np.array(g)
+
+    # Length of Vector
+    def Length(self, g):
+        lng = 0
+        for i in range(self._N):
+            lng += g[i] * g[i]    #距離の算出（勾配の合計値。ゼロになれば終了）
+        return lng**0.5;
+    
+    # Golden Section Method
+    def Gold(self, x, p, x_min=0, x_max=0.2):
+        tau = 0.61803398874989484820458683436564    #黄金比率0.5*(3 - 5**0.5)
+        a = x_min; b = x_max;
+        x1 = b - tau * (b - a)    # 探索範囲を狭める.x1,x2がxの更新式のαを示す
+        x2 = a + tau * (b - a)
+        f1 = self._func(x + p * x1, self._args)
+        f2 = self._func(x + p * x2, self._args)
+        for i in range(self._max):
+            if f2 > f1:
+                b = x2
+                x2 = x1
+                x1 = a + (1 - tau) * (b - a)
+                f2 = f1
+                f1 = self._func(x + p * x1, self._args)
+            else:
+                a = x1
+                x1 = x2
+                x2 = b - (1 - tau) * (b - a)
+                f1 = f2
+                f2 = self._func(x + p * x2, self._args)
+            if abs(b - a) < self._eps: break
+        return (x1 + x2) / 2    #ステップ幅を返す(x1,x2がxの更新式のαにあたる)
 # -------------------------------------------------------
 ##-----------------------------------
